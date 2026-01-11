@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,6 +33,7 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
+	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -56,11 +58,7 @@ func TestAddGetDelete(t *testing.T) {
 	got, err := store.Get(id)
 	require.NoError(t, err)
 
-	require.Equal(t, parcel.Number, got.Number)
-	require.Equal(t, parcel.Client, got.Client)
-	require.Equal(t, parcel.Status, got.Status)
-	require.Equal(t, parcel.Address, got.Address)
-	require.Equal(t, parcel.CreatedAt, got.CreatedAt)
+	assert.Equal(t, parcel, got)
 
 	err = store.Delete(id)
 	require.NoError(t, err)
@@ -74,6 +72,7 @@ func TestAddGetDelete(t *testing.T) {
 func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -90,7 +89,7 @@ func TestSetAddress(t *testing.T) {
 	err = store.SetAddress(id, newAddress)
 	require.NoError(t, err)
 	got, err := store.Get(id)
-	require.Equal(t, got.Address, newAddress)
+	assert.Equal(t, got.Address, newAddress)
 
 	// check
 	// получите добавленную посылку и убедитесь, что адрес обновился
@@ -100,6 +99,7 @@ func TestSetAddress(t *testing.T) {
 func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -118,13 +118,14 @@ func TestSetStatus(t *testing.T) {
 	err = store.SetStatus(id, ParcelStatusSent)
 	require.NoError(t, err)
 	got, err := store.Get(id)
-	require.Equal(t, got.Status, ParcelStatusSent)
+	assert.Equal(t, got.Status, ParcelStatusSent)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
 func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
 	require.NoError(t, err)
@@ -160,19 +161,15 @@ func TestGetByClient(t *testing.T) {
 	// убедитесь в отсутствии ошибки
 	require.NoError(t, err)
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
-	require.Equal(t, len(parcelMap), len(storedParcels))
+	assert.Len(t, storedParcels, len(parcelMap))
 
 	// check
 	for _, parcel := range storedParcels {
 		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
 		expected, ok := parcelMap[parcel.Number]
-		require.True(t, ok, "parcel number %d not found in parcelMap", parcel.Number)
+		assert.True(t, ok, "parcel number %d not found in parcelMap", parcel.Number)
 		// убедитесь, что значения полей полученных посылок заполнены верно
-		require.Equal(t, parcel.Number, expected.Number)
-		require.Equal(t, parcel.Client, expected.Client)
-		require.Equal(t, parcel.Status, expected.Status)
-		require.Equal(t, parcel.Address, expected.Address)
-		require.Equal(t, parcel.CreatedAt, expected.CreatedAt)
+		assert.Equal(t, parcel, expected)
 	}
 }
