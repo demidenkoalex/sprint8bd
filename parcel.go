@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 type ParcelStore struct {
@@ -23,7 +22,6 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 		sql.Named("created_at", p.CreatedAt))
 
 	if err != nil {
-		fmt.Println(err)
 		return 0, err
 	}
 	id64, err := result.LastInsertId()
@@ -55,7 +53,6 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	// здесь из таблицы может вернуться несколько строк
 	rows, err := s.db.Query("SELECT number,client,status,address,created_at FROM parcel WHERE client = :client", sql.Named("client", client))
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
