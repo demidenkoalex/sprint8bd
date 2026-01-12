@@ -33,6 +33,7 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
+	require.NoError(t, err)
 	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
@@ -72,6 +73,7 @@ func TestAddGetDelete(t *testing.T) {
 func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, err)
 	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
@@ -99,6 +101,7 @@ func TestSetAddress(t *testing.T) {
 func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, err)
 	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
@@ -118,6 +121,7 @@ func TestSetStatus(t *testing.T) {
 	err = store.SetStatus(id, ParcelStatusSent)
 	require.NoError(t, err)
 	got, err := store.Get(id)
+	require.NoError(t, err)
 	assert.Equal(t, got.Status, ParcelStatusSent)
 }
 
@@ -125,10 +129,10 @@ func TestSetStatus(t *testing.T) {
 func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
+	require.NoError(t, err)
 	require.NoError(t, db.Ping())
 	defer db.Close()
 	store := NewParcelStore(db)
-	require.NoError(t, err)
 
 	parcels := []Parcel{
 		getTestParcel(),
